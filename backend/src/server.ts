@@ -2,6 +2,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import authRoutes from './routes/auth';
+import eventRoutes from './routes/event';
 
 dotenv.config();
 
@@ -15,6 +17,9 @@ mongoose
   .connect(mongoURI)
   .then(() => console.log('MongoDB connected'))
   .catch((err) => console.log(err));
+
+app.use('/api/auth', authRoutes);
+app.use('/api/events', eventRoutes);
 
 app.get('/', (req, res) => {
   res.send('Event Scheduler Backend is running!');
