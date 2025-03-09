@@ -1,5 +1,22 @@
 version: '3.8'
 services:
+  web:
+    depends_on:
+      - backend
+    build: ./frontend
+    ports:
+      - '3000:3000'
+    env_file:
+      - ./frontend/.env
+    develop:
+      watch:
+        - path: ./frontend/package.json
+          action: rebuild
+        - path: ./frontend/package-lock.json
+          action: rebuild
+        - path: ./frontend
+          target: /app
+          action: sync
   backend:
     build: ./backend
     ports:
