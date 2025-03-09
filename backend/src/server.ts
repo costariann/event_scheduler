@@ -7,7 +7,7 @@ import eventRoutes from './routes/event';
 
 dotenv.config();
 
-const app = express();
+export const app = express();
 app.use(express.json());
 app.use(cors());
 
