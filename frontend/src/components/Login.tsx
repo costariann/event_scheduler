@@ -1,0 +1,73 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+
+const Login: React.FC = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const apiBaseUrl =
+    window.location.hostname === 'localhost'
+      ? import.meta.env.VITE_API_URI_FALLBACK
+      : import.meta.env.VITE_API_URI;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    try {
+      const response = await axios.post(`${apiBaseUrl}/api/auth/login`, {
+        username,
+        password,
+      });
+      console.log('Login response:', response.data);
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        setError('');
+        window.location.reload();
+      } else {
+        setError('Login succeeded but no token received');
+      }
+    } catch (err: any) {
+      console.error('Login error:', err.response?.data || err.message);
+      setError(
+        err.response?.data?.message || 'Failed to login - check console'
+      );
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold text-blue-600 mb-4">Login</h2>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-gray-700">Username</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+        >
+          Login
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default Login;

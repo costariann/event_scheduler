@@ -1,12 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
+import Login from './components/Login';
+import Register from './components/Register';
+import EventDashboard from './components/EventDashboard';
 
 const App: React.FC = () => {
+  const [isNewUser, setIsNewUser] = useState(false);
+  const token = localStorage.getItem('token');
+
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-blue-600">Event Scheduler</h1>
-        <p className="mt-2 text-gray-600">Welcome to the app!</p>
-      </div>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+      {!token ? (
+        <div className="max-w-md w-full">
+          {isNewUser ? <Register /> : <Login />}
+          <p className="mt-4 text-center text-gray-600">
+            {isNewUser ? 'Already have an account?' : 'New user?'}
+            <button
+              onClick={() => setIsNewUser(!isNewUser)}
+              className="ml-2 text-blue-600 hover:underline"
+            >
+              {isNewUser ? 'Login' : 'Register'}
+            </button>
+          </p>
+        </div>
+      ) : (
+        <EventDashboard />
+      )}
     </div>
   );
 };
