@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const { setToken } = useAuth();
 
   const apiBaseUrl =
     window.location.hostname === 'localhost'
@@ -21,17 +23,14 @@ const Register: React.FC = () => {
       });
       console.log('Registration response:', response.data);
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+        setToken(response.data.token);
         setError('');
-        window.location.reload();
       } else {
         setError('Registration succeeded but no token received');
       }
     } catch (err: any) {
       console.error('Registration error:', err.response?.data || err.message);
-      setError(
-        err.response?.data?.message || 'Failed to register - check console'
-      );
+      setError(err.response?.data?.message || 'Failed to register');
     }
   };
 

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 interface Event {
   _id: string;
@@ -12,15 +13,17 @@ interface Event {
 
 const EventDashboard: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [location, setLocation] = useState('');
-  const [description, setDescription] = useState('');
-  const [error, setError] = useState('');
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [location, setLocation] = useState("");
+  const [description, setDescription] = useState("");
+  const [error, setError] = useState("");
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const { token, logout } = useAuth();
 
   const apiBaseUrl =
-    window.location.hostname === 'localhost'
+    window.location.hostname === "localhost"
       ? import.meta.env.VITE_API_URI_FALLBACK
       : import.meta.env.VITE_API_URI;
 
@@ -29,72 +32,95 @@ const EventDashboard: React.FC = () => {
   }, []);
 
   const fetchEvents = async () => {
-    const token = localStorage.getItem('token');
     if (!token) return;
     try {
       const response = await axios.get(`${apiBaseUrl}/api/events`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Events fetched:', response.data);
       setEvents(response.data);
-      setError('');
+      setError("");
     } catch (err: any) {
-      console.error('Fetch events error:', err.response?.data || err.message);
-      setError(err.response?.data?.message || 'Failed to fetch events');
+      console.error("Fetch events error:", err.response?.data || err.message);
+      setError(err.response?.data?.message || "Failed to fetch events");
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreateOrUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      await axios.post(
-        `${apiBaseUrl}/api/events`,
-        { title, date, time, location, description },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      console.log('Event created:', {
-        title,
-        date,
-        time,
-        location,
-        description,
-      });
+      if (editingEvent) {
+        await axios.put(
+          `${apiBaseUrl}/api/events/${editingEvent._id}`,
+          { title, date, time, location, description },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setEditingEvent(null);
+      } else {
+        await axios.post(
+          `${apiBaseUrl}/api/events`,
+          { title, date, time, location, description },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
       fetchEvents();
-      setTitle('');
-      setDate('');
-      setTime('');
-      setLocation('');
-      setDescription('');
-      setError('');
+      setTitle("");
+      setDate("");
+      setTime("");
+      setLocation("");
+      setDescription("");
+      setError("");
     } catch (err: any) {
-      console.error('Create event error:', err.response?.data || err.message);
-      setError(err.response?.data?.message || 'Failed to create event');
+      console.error("Create/Update event error:", err.response?.data || err.message);
+      setError(err.response?.data?.message || "Failed to save event");
     }
+  };
+
+  const handleEdit = (event: Event) => {
+    setEditingEvent(event);
+    setTitle(event.title);
+    setDate(event.date.split("T")[0]);
+    setTime(event.time);
+    setLocation(event.location);
+    setDescription(event.description);
   };
 
   const handleDelete = async (id: string) => {
-    const token = localStorage.getItem('token');
     if (!token) return;
     try {
       await axios.delete(`${apiBaseUrl}/api/events/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Event deleted:', id);
       fetchEvents();
-      setError('');
+      setError("");
     } catch (err: any) {
-      console.error('Delete event error:', err.response?.data || err.message);
-      setError(err.response?.data?.message || 'Failed to delete event');
+      console.error("Delete event error:", err.response?.data || err.message);
+      setError(err.response?.data?.message || "Failed to delete event");
     }
+  };
+
+  const cancelEdit = () => {
+    setEditingEvent(null);
+    setTitle("");
+    setDate("");
+    setTime("");
+    setLocation("");
+    setDescription("");
   };
 
   return (
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-blue-600 mb-4">Event Dashboard</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-blue-600">Event Dashboard</h2>
+        <button
+          onClick={logout}
+          className="bg-gray-600 text-white p-2 rounded hover:bg-gray-700"
+        >
+          Logout
+        </button>
+      </div>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleCreate} className="mb-6">
+      <form onSubmit={handleCreateOrUpdate} className="mb-6">
         <div className="grid grid-cols-2 gap-4">
           <input
             type="text"
@@ -135,12 +161,23 @@ const EventDashboard: React.FC = () => {
             required
           />
         </div>
-        <button
-          type="submit"
-          className="mt-4 w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-        >
-          Add Event
-        </button>
+        <div className="mt-4 flex gap-2">
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+          >
+            {editingEvent ? "Update Event" : "Add Event"}
+          </button>
+          {editingEvent && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="w-full bg-gray-600 text-white p-2 rounded hover:bg-gray-700"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
       <div>
         {events.map((event) => (
@@ -150,17 +187,23 @@ const EventDashboard: React.FC = () => {
           >
             <div>
               <h3 className="text-lg font-semibold">{event.title}</h3>
-              <p>
-                {event.date.split('T')[0]} at {event.time} - {event.location}
-              </p>
+              <p>{event.date.split("T")[0]} at {event.time} - {event.location}</p>
               <p className="text-gray-600">{event.description}</p>
             </div>
-            <button
-              onClick={() => handleDelete(event._id)}
-              className="bg-red-600 text-white p-2 rounded hover:bg-red-700"
-            >
-              Delete
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleEdit(event)}
+                className="bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(event._id)}
+                className="bg-red-600 text-white p-2 rounded hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>
@@ -169,3 +212,4 @@ const EventDashboard: React.FC = () => {
 };
 
 export default EventDashboard;
+

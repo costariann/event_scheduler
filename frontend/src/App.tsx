@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import Login from './components/Login';
 import Register from './components/Register';
 import EventDashboard from './components/EventDashboard';
+import { useAuth } from './context/AuthContext';
 
 const App: React.FC = () => {
   const [isNewUser, setIsNewUser] = useState(false);
-  const token = localStorage.getItem('token');
+  const { token } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
