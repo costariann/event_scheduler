@@ -18,7 +18,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
         expiresIn: '1h',
       }
     );
-    res.json({ message: 'User registered', token, hashedPassword });
+    res.status(201).json({ message: 'User registered', token, hashedPassword });
   } catch (err) {
     console.log('Registration error:', err);
     res.status(400).json({ message: 'Username already exists' });

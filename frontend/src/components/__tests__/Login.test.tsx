@@ -3,9 +3,8 @@ import axios from 'axios';
 import Login from '../Login';
 import { AuthProvider } from '../../context/AuthContext';
 
-// Mock axios
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock('axios');
+const mockedAxios = axios as typeof axios & { post: ReturnType<typeof vi.fn> };
 
 describe('Login Component', () => {
   it('renders login form', () => {
@@ -14,7 +13,7 @@ describe('Login Component', () => {
         <Login />
       </AuthProvider>
     );
-    expect(screen.getByText('Login')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Login' })).toBeInTheDocument();
     expect(screen.getByLabelText('Username')).toBeInTheDocument();
     expect(screen.getByLabelText('Password')).toBeInTheDocument();
   });
@@ -34,7 +33,7 @@ describe('Login Component', () => {
     fireEvent.change(screen.getByLabelText('Password'), {
       target: { value: 'wrong' },
     });
-    fireEvent.click(screen.getByText('Login'));
+    fireEvent.click(screen.getByRole('button', { name: 'Login' }));
     expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
   });
 });

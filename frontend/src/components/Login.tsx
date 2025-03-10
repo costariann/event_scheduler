@@ -1,36 +1,33 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useAuth } from "../context/AuthContext";
+import axios from 'axios';
+import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const { setToken } = useAuth();
-
-  const apiBaseUrl =
-    window.location.hostname === "localhost"
-      ? import.meta.env.VITE_API_URI_FALLBACK
-      : import.meta.env.VITE_API_URI;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     try {
+      const apiBaseUrl =
+        window.location.hostname === 'localhost'
+          ? import.meta.env.VITE_API_URI_FALLBACK
+          : import.meta.env.VITE_API_URI;
       const response = await axios.post(`${apiBaseUrl}/api/auth/login`, {
         username,
         password,
       });
-      console.log("Login response:", response.data);
       if (response.data.token) {
         setToken(response.data.token);
-        setError("");
+        setError('');
       } else {
-        setError("Login succeeded but no token received");
+        setError('Login succeeded but no token received');
       }
     } catch (err: any) {
-      console.error("Login error:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Failed to login");
+      setError(err.response?.data?.message || 'Failed to login');
     }
   };
 
@@ -40,8 +37,11 @@ const Login: React.FC = () => {
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-gray-700">Username</label>
+          <label htmlFor="username" className="block text-gray-700">
+            Username
+          </label>
           <input
+            id="username"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -50,8 +50,11 @@ const Login: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700">Password</label>
+          <label htmlFor="password" className="block text-gray-700">
+            Password
+          </label>
           <input
+            id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -71,4 +74,3 @@ const Login: React.FC = () => {
 };
 
 export default Login;
-

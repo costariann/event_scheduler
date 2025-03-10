@@ -15,7 +15,11 @@ const mongoURI = process.env.MONGO_URI;
 if (!mongoURI) throw new Error('MONGO_URI is not defined in .env');
 mongoose
   .connect(mongoURI)
-  .then(() => console.log('MongoDB connected'))
+  .then(() => {
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('MongoDB connected');
+    }
+  })
   .catch((err) => console.log(err));
 
 app.use('/api/auth', authRoutes);
@@ -26,4 +30,6 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
