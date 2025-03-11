@@ -10,7 +10,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up Node.js
@@ -22,18 +21,20 @@ jobs:
       - name: Run tests
         run: cd backend && npm test
         env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI_TEST }}
+          NODE_ENV: test
+          MONGO_URI: ${{ secrets.MONGODB_URI_TEST }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          ACTIONS_STEP_DEBUG: true
 
-deploy:
-  needs: test
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v3
-    - name: Deploy to Render
-      uses: JorgeLNJunior/render-deploy@v1.4.5
-      with:
-        service_id: ${{ secrets.RENDER_SERVICE_ID }}
-        api_key: ${{ secrets.RENDER_API_KEY }}
-        clear_cache: true
-        wait_deploy: true
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy to Render
+        uses: JorgeLNJunior/render-deploy@v1.4.5
+        with:
+          service_id: ${{ secrets.RENDER_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          clear_cache: true
+          wait_deploy: true

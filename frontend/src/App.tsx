@@ -14,7 +14,7 @@ const App: React.FC = () => {
         <div className="max-w-md w-full">
           {isNewUser ? <Register /> : <Login />}
           <p className="mt-4 text-center text-gray-600">
-            {isNewUser ? 'Already have an account?' : 'New user?'}
+            {isNewUser ? 'Already have an account?' : 'New User?'}
             <button
               onClick={() => setIsNewUser(!isNewUser)}
               className="ml-2 text-blue-600 hover:underline"
